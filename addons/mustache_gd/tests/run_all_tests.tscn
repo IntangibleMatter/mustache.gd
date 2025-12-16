@@ -1,0 +1,47 @@
+[gd_scene load_steps=3 format=3 uid="uid://ca3e4cdegkrwa"]
+
+[ext_resource type="Script" uid="uid://cvb0yofcunts1" path="res://addons/mustache_gd/tests/run_all_tests.gd" id="1_4pg20"]
+[ext_resource type="PackedScene" uid="uid://c50edgky5elt7" path="res://test_scenes/run_tests.tscn" id="2_3ubgp"]
+
+[node name="RunAllTests" type="VBoxContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_4pg20")
+
+[node name="TotalPassed" type="Label" parent="."]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TestRunnerContainer" type="HBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="RunTestsComments" parent="ScrollContainer/TestRunnerContainer" instance=ExtResource("2_3ubgp")]
+layout_mode = 2
+file_path = "res://specs/comments.json"
+
+[node name="RunTestsDelimiters" parent="ScrollContainer/TestRunnerContainer" instance=ExtResource("2_3ubgp")]
+layout_mode = 2
+file_path = "res://specs/delimiters.json"
+
+[node name="RunTestsInterpolation" parent="ScrollContainer/TestRunnerContainer" instance=ExtResource("2_3ubgp")]
+layout_mode = 2
+
+[node name="RunTestsInverted" parent="ScrollContainer/TestRunnerContainer" instance=ExtResource("2_3ubgp")]
+layout_mode = 2
+file_path = "res://specs/inverted.json"
+
+[node name="RunTestsPartials" parent="ScrollContainer/TestRunnerContainer" instance=ExtResource("2_3ubgp")]
+layout_mode = 2
+file_path = "res://specs/partials.json"
+
+[node name="RunTestsSections" parent="ScrollContainer/TestRunnerContainer" instance=ExtResource("2_3ubgp")]
+layout_mode = 2
+file_path = "res://specs/sections.json"
