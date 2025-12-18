@@ -48,8 +48,10 @@ func parse_string(string: String) -> Error:
 		if next_tag:
 			#prints("tag", next_tag.strings)
 			var tag_start := next_tag.get_start()
+			var tag_end := next_tag.get_end()
 			if tag_start >= 0:
-				contents_stack[-1].append(string.substr(pos, tag_start - pos))
+				var check_if_empty: bool = true
+				
 
 				var tag_contents := next_tag.get_string(1).strip_edges()  # I think this returns the matched tag???
 				var tag_type := tag_contents[0]
@@ -63,6 +65,7 @@ func parse_string(string: String) -> Error:
 						new_tag.contents = []
 					"{", "&":
 						new_tag.type = TOKEN_TYPE.RAW_VALUE
+						check_if_empty = false
 						if tag_type == "{":
 							tag_contents = tag_contents.trim_suffix("}").strip_edges()
 							new_tag.tag = tag_contents
@@ -71,11 +74,13 @@ func parse_string(string: String) -> Error:
 					".":
 						if tag_contents.is_empty():
 							new_tag.type = TOKEN_TYPE.DOT
+							check_if_empty = false
 					"^":
 						new_tag.type = TOKEN_TYPE.INVERTED_SECTION
 						new_tag.contents = []
 					">":
 						new_tag.type = TOKEN_TYPE.PARTIAL
+						check_if_empty = false
 					"<":
 						new_tag.type = TOKEN_TYPE.PARENT
 					"$":
@@ -87,6 +92,49 @@ func parse_string(string: String) -> Error:
 						new_tag.type = TOKEN_TYPE.SET_DELIMITER
 					_: # may need to improve error handling???
 						new_tag.type = TOKEN_TYPE.VALUE 
+						check_if_empty = false
+				
+				if check_if_empty:
+					var prev_newline := string.rfind("\n", tag_start)
+					var next_newline := string.find("\n", tag_end)
+					if prev_newline > 0 and string[prev_newline - 1] == "\r":
+						prev_newline -= 1
+						
+					var is_standalone := false
+					if prev_newline >= 0 and next_newline >= 0 and prev_newline > pos:
+						var newline_substring := string.substr(prev_newline, next_newline - prev_newline).replace(
+							next_tag.strings[0], ""
+						)
+						
+						prints("newline_substring", newline_substring, newline_substring.strip_edges().is_empty())
+						if newline_substring.strip_edges().is_empty():
+							is_standalone = true
+							contents_stack[-1].append(string.substr(pos, prev_newline - pos))
+							
+					elif next_newline >= 0:
+						var newline_substring := string.substr(0, next_newline).replace(
+							next_tag.strings[0], ""
+						)
+						if newline_substring.strip_edges().is_empty():
+							is_standalone = true
+							contents_stack[-1].append(string.substr(0, tag_start))
+							
+					elif prev_newline >= 0 and prev_newline > pos:
+						var newline_substring := string.substr(prev_newline).replace(
+							next_tag.strings[0], ""
+						)
+						if newline_substring.strip_edges().is_empty():
+							is_standalone = true
+							string = string.substr(0, tag_end)
+					if is_standalone:
+						pass
+						#contents_stack[-1].append(string.substr(pos, prev_newline - pos))
+					else:
+						contents_stack[-1].append(string.substr(pos, tag_start - pos))
+						
+				else:
+					contents_stack[-1].append(string.substr(pos, tag_start - pos))
+					
 				
 				if new_tag.type != TOKEN_TYPE.ERR and new_tag.type != TOKEN_TYPE.COMMENT:
 					if new_tag.type == TOKEN_TYPE.VALUE:
