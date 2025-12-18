@@ -73,6 +73,8 @@ func make_label(text: String) -> Label:
 func run_tests() -> void:
 	for test in tests:
 		run_test(test)
+		#await get_tree().process_frame
+		#await get_tree().process_frame
 	passed_label.text = "{2} - PASSED: {0}/{1}".format(
 		[tests.size() - failed, tests.size(), file_path.get_file().get_basename()]
 	)
@@ -83,9 +85,9 @@ func run_test(test: Dictionary, foldable: FoldableContainer = null) -> void:
 	if test.name in [
 		#"Multiline",
 		#"Empty List",
-		"Standalone Without Previous Line",
+		#"Standalone Without Previous Line",
 		"Standalone Without Newline",
-		"Standalone Line Endings",
+		#"Standalone Line Endings",
 		#"Standalone Indentation",
 		#"Doubled",
 		
@@ -104,10 +106,11 @@ func run_test(test: Dictionary, foldable: FoldableContainer = null) -> void:
 				child.queue_free()
 	else:
 		foldable_contents = VBoxContainer.new()
+		foldable.add_child(foldable_contents)
 
 	foldable.fold()
 	foldable.title = test.name
-	foldable.add_child(foldable_contents)
+	
 	foldable_contents.add_child(make_label(test.desc))
 
 	var rerun_button := Button.new()

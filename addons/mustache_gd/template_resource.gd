@@ -94,13 +94,15 @@ func parse_string(string: String) -> Error:
 						new_tag.type = TOKEN_TYPE.VALUE 
 						check_if_empty = false
 				
+				
+				var is_standalone := false
+				
 				if check_if_empty:
 					var prev_newline := string.rfind("\n", tag_start)
 					var next_newline := string.find("\n", tag_end)
 					if prev_newline > 0 and string[prev_newline - 1] == "\r":
 						prev_newline -= 1
 						
-					var is_standalone := false
 					if prev_newline >= 0 and next_newline >= 0 and prev_newline > pos:
 						var newline_substring := string.substr(prev_newline, next_newline - prev_newline).replace(
 							next_tag.strings[0], ""
@@ -110,30 +112,39 @@ func parse_string(string: String) -> Error:
 						if newline_substring.strip_edges().is_empty():
 							is_standalone = true
 							contents_stack[-1].append(string.substr(pos, prev_newline - pos))
+							pos = next_newline 
 							
 					elif next_newline >= 0:
 						var newline_substring := string.substr(0, next_newline).replace(
 							next_tag.strings[0], ""
 						)
+						prints("newline_substring next", newline_substring, newline_substring.strip_edges().is_empty())
 						if newline_substring.strip_edges().is_empty():
 							is_standalone = true
-							contents_stack[-1].append(string.substr(0, tag_start))
+							pos = next_newline + 1
+
+							#contents_stack[-1].append(string.substr(0, tag_start))
 							
 					elif prev_newline >= 0 and prev_newline > pos:
 						var newline_substring := string.substr(prev_newline).replace(
 							next_tag.strings[0], ""
 						)
+						prints("newline_substring prev", newline_substring, newline_substring.strip_edges().is_empty())
 						if newline_substring.strip_edges().is_empty():
 							is_standalone = true
-							string = string.substr(0, tag_end)
+							#string = string.substr(0, tag_end)
 					if is_standalone:
-						pass
+						pos = max(pos, tag_end)
+						#pass
 						#contents_stack[-1].append(string.substr(pos, prev_newline - pos))
 					else:
 						contents_stack[-1].append(string.substr(pos, tag_start - pos))
+						pos = next_tag.get_end()
+						
 						
 				else:
 					contents_stack[-1].append(string.substr(pos, tag_start - pos))
+					pos = next_tag.get_end()
 					
 				
 				if new_tag.type != TOKEN_TYPE.ERR and new_tag.type != TOKEN_TYPE.COMMENT:
@@ -155,7 +166,6 @@ func parse_string(string: String) -> Error:
 					if new_tag.has("contents"):
 						contents_stack.append(new_tag.contents)
 					
-				pos = next_tag.get_end()
 		else:
 			contents_stack[-1].append(string.substr(pos))
 			#prints("bbb", contents_stack)
