@@ -86,10 +86,10 @@ func run_test(test: Dictionary, foldable: FoldableContainer = null) -> void:
 		#"Multiline",
 		#"Empty List",
 		#"Standalone Without Previous Line",
-		"Standalone Without Newline",
+		#"Standalone Without Newline",
 		#"Standalone Line Endings",
 		#"Standalone Indentation",
-		#"Doubled",
+		"Doubled",
 		
 		]:
 		prints("OH SHIT WATCH THIS")

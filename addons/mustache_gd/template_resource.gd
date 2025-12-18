@@ -100,8 +100,11 @@ func parse_string(string: String) -> Error:
 				if check_if_empty:
 					var prev_newline := string.rfind("\n", tag_start)
 					var next_newline := string.find("\n", tag_end)
+					var endpos := -1
+					var prev_newline_offset := 0
 					if prev_newline > 0 and string[prev_newline - 1] == "\r":
 						prev_newline -= 1
+						prev_newline_offset = 1
 						
 					if prev_newline >= 0 and next_newline >= 0 and prev_newline > pos:
 						var newline_substring := string.substr(prev_newline, next_newline - prev_newline).replace(
@@ -111,7 +114,7 @@ func parse_string(string: String) -> Error:
 						prints("newline_substring", newline_substring, newline_substring.strip_edges().is_empty())
 						if newline_substring.strip_edges().is_empty():
 							is_standalone = true
-							contents_stack[-1].append(string.substr(pos, prev_newline - pos))
+							contents_stack[-1].append(string.substr(pos, prev_newline + prev_newline_offset - pos))
 							pos = next_newline 
 							
 					elif next_newline >= 0:
@@ -132,9 +135,15 @@ func parse_string(string: String) -> Error:
 						prints("newline_substring prev", newline_substring, newline_substring.strip_edges().is_empty())
 						if newline_substring.strip_edges().is_empty():
 							is_standalone = true
-							#string = string.substr(0, tag_end)
+							string = string.substr(0, prev_newline + prev_newline_offset + 1)
+							endpos = prev_newline + prev_newline_offset + 1
 					if is_standalone:
+						if endpos == 0:
+							pass
+						elif endpos > -1:
+							contents_stack[-1].append(string.substr(pos, endpos - pos))
 						pos = max(pos, tag_end)
+						
 						#pass
 						#contents_stack[-1].append(string.substr(pos, prev_newline - pos))
 					else:
