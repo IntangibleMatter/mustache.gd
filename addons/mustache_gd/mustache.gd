@@ -64,22 +64,29 @@ func add_partial(partial_name: String, partial: MustacheTemplate) -> void:
 
 #region render
 
-func render(template: MustacheTemplate) -> String:
+func render(template: MustacheTemplate, partial_indent_string := "") -> String:
 	if not template:
 		printerr("TEMPLATE IS NULL:", template)
 		return ""
 	var out: String
 	
-	out = render_section(template.contents)
+	out = render_section(template.contents, partial_indent_string)
 	
 	return out
 
 
-func render_section(section: Array) -> String:
+func render_section(section: Array, partial_indent_string := "") -> String:
 	var out := ""
 	
-	for sect in section:
+	for sect_idx in section.size():
+			#out += partial_indent_string
+			
+		var sect: Variant = section[sect_idx]
 		if sect is String:
+			#if not partial_indent_string.is_empty():
+				#for line in sect.split("\n"):
+					#out += partial_indent_string + line + "\n"
+			#else:
 			out += sect
 		elif sect is Dictionary:
 			if "contents" in sect:
@@ -117,7 +124,29 @@ func render_section(section: Array) -> String:
 							item = ""
 						out += str(item)
 					MustacheTemplate.TOKEN_TYPE.PARTIAL:
-						out += render(partials.get(sect.tag))
+						# handle the indentation thing
+						var is_indented: bool = false
+						var indent_string: String = ""
+						if sect_idx > 0:
+							if section[sect_idx - 1] is String:
+								var sect_string: String = section[sect_idx - 1]
+								var prev_newline := sect_string.rfind("\n")
+								if prev_newline >= 0:
+									var split_string:= sect_string.substr(prev_newline)
+									if split_string.strip_edges().is_empty():
+										is_indented = true
+										indent_string =sect_string.substr(prev_newline + 1)
+									
+						#if not is_indented:
+						out += render(partials.get(sect.tag), indent_string)
+						#else:
+							#var rendered_string := render(partials.get(sect.tag)).split("\n")
+							#for line in rendered_string.size():
+								#out += (
+									#(indent_string if line > 0 else "") + 
+									#rendered_string[line] + 
+									#("\n" if line < rendered_string.size() - 1 else "")
+									#)
 				pass
 	
 	return out

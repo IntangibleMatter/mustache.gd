@@ -39,7 +39,6 @@ var lambda_tests: Dictionary[String, Callable] = {
 
 
 func _ready() -> void:
-	prints("\n  \n	\n".strip_edges().is_empty())
 	if not file_path:
 		return
 
@@ -87,8 +86,8 @@ func run_test(test: Dictionary, foldable: FoldableContainer = null) -> void:
 		#"Empty List",
 		#"Standalone Without Previous Line",
 		#"Standalone Without Newline",
-		#"Standalone Line Endings",
-		#"Standalone Indentation",
+		"Standalone Line Endings",
+		"Standalone Indentation",
 		"Doubled",
 		
 		]:
@@ -143,7 +142,7 @@ func run_test(test: Dictionary, foldable: FoldableContainer = null) -> void:
 		for partial in test.partials:
 			var par := MustacheTemplate.create_from_string(test.partials[partial])
 			mustache.add_partial(partial, par)
-			partial_collection.add_child(make_label(partial + " = " + test.partials[partial]))
+			partial_collection.add_child(make_label(partial + " = " + test.partials[partial].c_escape()))
 		foldable_contents.add_child(partial_collection)
 
 	var template := MustacheTemplate.create_from_string(test.template)
@@ -174,28 +173,41 @@ func run_test(test: Dictionary, foldable: FoldableContainer = null) -> void:
 func clean_data() -> void:
 	for test in tests:
 		var dat = test.data
+		dat = clean_data_section(dat)
+		if dat is float or dat is int:
+			test.data = dat
+		pass
+		#if dat is Dictionary:
+			#for val in dat:
+				#if dat[val] is float:
+					#if is_equal_approx(dat[val], floor(dat[val])):
+						#dat[val] = int(dat[val])
+				#elif dat[val] is Array:
+					#for i in dat[val].size():
+						#if dat[val][i] is float:
+							#if is_equal_approx(dat[val][i], floor(dat[val][i])):
+								#dat[val][i] = int(dat[val][i])
+						#elif dat[val][i] is Dictionary or dat[val][i] is Array:
+							#for j in (dat[val][i] if dat[val][i] is Dictionary else dat[val][i].size()):
+								#if dat[val][i][j] is float:
+									#if is_equal_approx(dat[val][i][j], floor(dat[val][i][j])):
+										#dat[val][i][j] = int(dat[val][i][j])
+										#
+		#elif dat is float:
+			#if is_equal_approx(dat, floor(dat)):
+				#test.data = int(dat)
+		#elif dat is Array:
+			#dat = clean_data_section(dat)
 
-		if dat is Dictionary:
-			for val in dat:
-				if dat[val] is float:
-					if is_equal_approx(dat[val], floor(dat[val])):
-						dat[val] = int(dat[val])
-				elif dat[val] is Array:
-					for i in dat[val].size():
-						if dat[val][i] is float:
-							if is_equal_approx(dat[val][i], floor(dat[val][i])):
-								dat[val][i] = int(dat[val][i])
-						elif dat[val][i] is Dictionary or dat[val][i] is Array:
-							for j in (dat[val][i] if dat[val][i] is Dictionary else dat[val][i].size()):
-								if dat[val][i][j] is float:
-									if is_equal_approx(dat[val][i][j], floor(dat[val][i][j])):
-										dat[val][i][j] = int(dat[val][i][j])
-										
-		elif dat is float:
-			if is_equal_approx(dat, floor(dat)):
-				test.data = int(dat)
-		elif dat is Array:
-			for i in dat.size():
-				if dat[i] is float:
-					if is_equal_approx(dat[i], floor(dat[i])):
-						dat[i] = int(dat[i])
+func clean_data_section(data: Variant) -> Variant:
+	if data is float:
+		if is_equal_approx(data, floor(data)):
+			return int(data)
+		return data
+	elif data is Array:
+		for i in data.size():
+			data[i] = clean_data_section(data[i])
+	elif data is Dictionary:
+		for i in data:
+			data[i] = clean_data_section(data[i])
+	return data
