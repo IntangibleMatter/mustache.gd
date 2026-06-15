@@ -89,10 +89,10 @@ func run_test(test: Dictionary, foldable: FoldableContainer = null) -> void:
 		"Standalone Line Endings",
 		"Standalone Indentation",
 		"Doubled",
-		
+
 		]:
 		prints("OH SHIT WATCH THIS")
-	
+
 	if not foldable:
 		foldable = FoldableContainer.new()
 
@@ -109,7 +109,7 @@ func run_test(test: Dictionary, foldable: FoldableContainer = null) -> void:
 
 	foldable.fold()
 	foldable.title = test.name
-	
+
 	foldable_contents.add_child(make_label(test.desc))
 
 	var rerun_button := Button.new()

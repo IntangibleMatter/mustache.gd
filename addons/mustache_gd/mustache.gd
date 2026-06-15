@@ -16,36 +16,36 @@ func get_context_value(key: String) -> Variant:
 			return context_stack[-1]
 	elif key.contains("."):
 		return get_split_context_value(key)
-	
+
 	for i in range(context_stack.size() - 1, -1, -1):
 		var curr: Variant = context_stack[i]
 		if curr is Object or curr is Dictionary:
 			if key in curr:
 				return curr.get(key)
-	
+
 	return null
 
 
 func get_split_context_value(key: String) -> Variant:
 	var key_parts := Array(key.split("."))
 	var base := key_parts.pop_front()
-	
+
 	var searchable: Variant
-	
+
 	for i in range(context_stack.size() - 1, -1, -1):
 		var curr: Variant = context_stack[i]
 		if curr is Object or curr is Dictionary:
 			if base in curr:
 				searchable = curr.get(base)
 				break
-	
+
 	if searchable:
 		for part in key_parts:
 			if part in searchable:
 				searchable = searchable.get(part)
 			else:
 				return null
-		
+
 		return searchable
 
 	return null
@@ -69,18 +69,18 @@ func render(template: MustacheTemplate, partial_indent_string := "") -> String:
 		printerr("TEMPLATE IS NULL:", template)
 		return ""
 	var out: String
-	
+
 	out = render_section(template.contents, partial_indent_string)
-	
+
 	return out
 
 
 func render_section(section: Array, partial_indent_string := "") -> String:
 	var out := ""
-	
+
 	for sect_idx in section.size():
 			#out += partial_indent_string
-			
+
 		var sect: Variant = section[sect_idx]
 		if sect is String:
 			#if not partial_indent_string.is_empty():
@@ -136,19 +136,19 @@ func render_section(section: Array, partial_indent_string := "") -> String:
 									if split_string.strip_edges().is_empty():
 										is_indented = true
 										indent_string =sect_string.substr(prev_newline + 1)
-									
+
 						#if not is_indented:
 						out += render(partials.get(sect.tag), indent_string)
 						#else:
 							#var rendered_string := render(partials.get(sect.tag)).split("\n")
 							#for line in rendered_string.size():
 								#out += (
-									#(indent_string if line > 0 else "") + 
-									#rendered_string[line] + 
+									#(indent_string if line > 0 else "") +
+									#rendered_string[line] +
 									#("\n" if line < rendered_string.size() - 1 else "")
 									#)
 				pass
-	
+
 	return out
 
 #endregion render

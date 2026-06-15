@@ -20,5 +20,5 @@ func _ready() -> void:
 func update_total_passed(tests: int, passed: int) -> void:
 	total_test_count += tests
 	passed_tests += passed
-	
+
 	total_passed.text = "Passed: {0}/{1}".format([passed_tests, total_test_count])

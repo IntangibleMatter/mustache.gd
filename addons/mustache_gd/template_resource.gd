@@ -59,19 +59,19 @@ func parse_string(string: String) -> Error:
 				tag_contents = tag_contents.substr(1)
 				tag_contents = tag_contents.strip_edges()
 				var new_tag: Dictionary = {"type": TOKEN_TYPE.ERR, "tag": tag_contents}
-				
-				
+
+
 				var may_be_standalone: bool = false
-				
+
 				var pretag_string := string.substr(pos, tag_start - pos)
-				
+
 				if pretag_string.rfind("\n") != -1:
 					var padding: String = ""
 					padding = pretag_string.substr(pretag_string.rfind("\n"))
 					if padding.strip_edges().is_empty() or padding.strip_edges() == "\n":
 						may_be_standalone = true
-					
-				
+
+
 				match tag_type:
 					"#":
 						new_tag.type = TOKEN_TYPE.SECTION
@@ -104,10 +104,10 @@ func parse_string(string: String) -> Error:
 					"=":
 						new_tag.type = TOKEN_TYPE.SET_DELIMITER
 					_: # may need to improve error handling???
-						new_tag.type = TOKEN_TYPE.VALUE 
+						new_tag.type = TOKEN_TYPE.VALUE
 						may_be_standalone = false
-				
-				
+
+
 				if may_be_standalone:
 					if string.find("\n") != -1:
 						var posttag_string: String = string.substr(tag_end, string.find("\n", tag_end) - tag_end)
@@ -115,21 +115,23 @@ func parse_string(string: String) -> Error:
 							may_be_standalone = true
 						else:
 							may_be_standalone = false
-				
+
+				var has_return: bool = false
+
 				if may_be_standalone:
 					var prev_newline := string.rfind("\n", tag_start)
-					var has_return: bool = string[prev_newline - 1] == "\r"
+					#has_return = string[prev_newline - 1] == "\r"
 					if prev_newline:
 						contents_stack[-1].append(string.substr(
 							pos , prev_newline - (1 if has_return else 0) - pos))
-					
+
 					if string.find("\n", tag_end) != -1:
 						pos = string.find("\n", tag_end)
 						if prev_newline == -1:
 							if pos < string.length() - 2:
 								pos += 1
-							if string[pos - 1] == "\r":
-								pos -= 1
+							#if string[pos - 1] == "\r":
+								#pos -= 1
 					else:
 						pos = tag_end
 					#if pos < string.length() - 1:
@@ -137,12 +139,12 @@ func parse_string(string: String) -> Error:
 				else:
 					contents_stack[-1].append(string.substr(pos, tag_start - pos))
 					pos = next_tag.get_end()
-					
-				
+
+
 				if new_tag.type != TOKEN_TYPE.ERR and new_tag.type != TOKEN_TYPE.COMMENT:
 					if new_tag.type == TOKEN_TYPE.VALUE:
 						new_tag.tag = tag_type + tag_contents
-					
+
 					if new_tag.type == TOKEN_TYPE.SECTION_END:
 						if contents_stack[-2][-1].tag == new_tag.tag:
 							prints("section end matcch")
@@ -152,12 +154,12 @@ func parse_string(string: String) -> Error:
 							printerr("SECTIONS DON'T MATCH")
 							return ERR_INVALID_DATA
 
-						
+
 					if not new_tag.type == TOKEN_TYPE.SECTION_END:
 						contents_stack[-1].append(new_tag)
 					if new_tag.has("contents"):
 						contents_stack.append(new_tag.contents)
-					
+
 		else:
 			contents_stack[-1].append(string.substr(pos))
 			#prints("bbb", contents_stack)
@@ -174,5 +176,5 @@ func parse_string(string: String) -> Error:
 static func create_from_string(string: String) -> MustacheTemplate:
 	var template := MustacheTemplate.new()
 	template.parse_string(string)
-
+	prints(template.contents)
 	return template
